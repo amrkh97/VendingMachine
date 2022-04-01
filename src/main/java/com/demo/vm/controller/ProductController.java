@@ -1,12 +1,17 @@
 package com.demo.vm.controller;
 
+import com.demo.vm.model.MoneyModel;
+import com.demo.vm.model.PaymentModel;
 import com.demo.vm.model.ProductModel;
 import com.demo.vm.service.ProductService;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class ProductController {
@@ -37,5 +42,17 @@ public class ProductController {
     @GetMapping(path = "/product/delete/{id}")
     public ResponseEntity<Boolean> deleteProduct(@PathVariable Long id){
         return ResponseEntity.ok().body(productService.deleteProductByID(id));
+    }
+
+    @PostMapping(path = "/buy")
+    public ResponseEntity<Object> buyProducts(@RequestBody PaymentModel model) throws Exception {
+        MoneyModel paymentModel = productService.buyProducts(model, model.getBuyerId());
+        if(!Objects.isNull(paymentModel)){
+            return ResponseEntity.ok().body(paymentModel);
+        }else{
+            JSONPObject jsonpObject = new JSONPObject("ErrorMessage",
+                    "Error in processing your payment request");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(jsonpObject);
+        }
     }
 }
